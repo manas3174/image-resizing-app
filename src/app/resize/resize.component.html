@@ -1,45 +1,128 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <style></style>
-</head>
-<body>
-  <div class="container text-center text-white py-5" style="background-color: #222; height: 100vh;">
-    <h1 class="mb-5 display-4">Image Resizing Application</h1>
-  
-    <div class="p-5 bg-dark rounded mb-4 border border-light">
-      <div class="mb-3">
-        <i class="bi bi-file-earmark" style="font-size: 2rem;"></i>
-        <p>Drag & Drop Files Here</p>
-      </div>
-  
-      <div class="d-flex justify-content-center gap-2 mb-3">
-        <button class="btn btn-light">Clear Upload</button>
-        <label class="btn btn-secondary mb-0">
-          Browse…
-          <input type="file" hidden multiple (change)="onImageSelect($event)">
-        </label>
-      </div>
-    </div>
-  
-    <div class="mb-4">
-      <h5 class="text-uppercase">Dimensions</h5>
-      <p>Choose the dimension into which you want to resize your image(s)</p>
-      <select class="form-select w-50 mx-auto" (change)="onDimensionSelect($event)">
-        <option value="">Choose...</option>
-        <option value="640x360">640 x 360</option>
-        <option value="1280x720">1280 x 720</option>
-        <option value="1920x1080">1920 x 1080</option>
-      </select>
-      
-    </div>
-  
-    <button class="btn btn-outline-light px-4 py-2" (click)="onSubmit()">RESIZE</button>
+<div class="container text-center text-white py-5" style="background-color: #222; min-height: 100vh;">
+  <h1 class="mb-5 display-4">Image Resizing Application</h1>
 
+  <!-- Drag and Drop -->
+  <div
+    class="p-5 bg-dark rounded mb-4 border border-light text-center"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+    [class.drag-over]="isDragOver"
+    style="transition: background-color 0.3s ease;"
+  >
+    <div class="mb-3 text-white">
+      <i class="bi bi-file-earmark" style="font-size: 2rem;"></i>
+      <p>Drag & Drop Image Files or Folders Here</p>
+    </div>
+
+
+      <!-- File Upload Button -->
+      <label class="btn btn-secondary mb-2 w-30 me-2">
+        Upload Images
+        <input
+          type="file"
+          (change)="onImageSelect($event)"
+          multiple
+          accept="image/*"
+          hidden
+        />
+      </label>
+
+      <!-- Folder Upload Button -->
+      <label class="btn btn-secondary mb-2 w-30">
+        Upload Folder
+        <input
+          type="file"
+          (change)="onImageSelect($event)"
+          multiple
+          webkitdirectory
+          directory
+          accept="image/*"
+          hidden
+        />
+      </label>
+
+      <div class="d-flex justify-content-center flex-column align-items-center gap-3">
+        <button class="btn btn-light" (click)="clearImages()">Clear Upload</button>
+    </div>
   </div>
-  
-</body>
-</html>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isUploading" class="text-center my-4">
+    <div class="spinner-border text-light" role="status">
+      <span class="visually-hidden">Uploading...</span>
+    </div>
+  </div>
+
+  <!-- File List -->
+  <div *ngIf="selectedImages.length" class="mt-5 mb-4 d-flex justify-content-center">
+    <div class="file-list w-75">
+      <h5 class="text-light mb-3 text-center">SELECTED FILES</h5>
+
+      <ul class="list-unstyled">
+        <li
+          *ngFor="let file of selectedImages; let i = index"
+          class="d-flex align-items-center px-3 py-2"
+          style="background-color: #2a2a2a; color: #fff;"
+        >
+          <img
+            [src]="getImagePreview(file)"
+            alt="preview"
+            width="36"
+            height="36"
+            style="object-fit: cover; border-radius: 4px; margin-right: 12px;"
+          />
+
+          <span
+            style="flex: 1; text-align: left;"
+            class="file-name"
+            (click)="openFile(file)"
+          >
+            {{ file.name }}
+          </span>
+
+          <span
+            class="text-danger"
+            style="cursor: pointer; font-size: 1.5rem;"
+            (click)="removeFile(i)"
+            title="Remove"
+          >
+            ×
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Dimensions Dropdown -->
+  <div class="mb-4 mt-5">
+    <h5 class="text-uppercase">Dimensions</h5>
+    <p>Choose the dimension into which you want to resize your image(s)</p>
+    <select class="form-select w-50 mx-auto" (change)="onDimensionSelect($event)">
+      <option value="">Choose...</option>
+
+      <optgroup label="16:9">
+        <option value="3840x2160">3840 x 2160</option>
+        <option value="1920x1080">1920 x 1080</option>
+        <option value="1280x720">1280 x 720</option>
+      </optgroup>
+
+      <optgroup label="4:3">
+        <option value="1600x1200">1600 x 1200</option>
+        <option value="1024x768">1024 x 768</option>
+        <option value="800x600">800 x 600</option>
+      </optgroup>
+
+      <optgroup label="1:1">
+        <option value="1080x1080">1080 x 1080</option>
+        <option value="800x800">800 x 800</option>
+        <option value="400x400">400 x 400</option>
+        <option value="200x200">200 x 200</option>
+        <option value="150x150">150 x 150</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <!-- Submit Button -->
+  <button class="btn btn-outline-light px-4 py-2" (click)="onSubmit()">RESIZE</button>
+</div>

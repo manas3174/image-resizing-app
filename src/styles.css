@@ -5,3 +5,59 @@ body {
     color: white;
     font-family: Arial, Helvetica, sans-serif;
 }
+
+.drag-over {
+    background-color: #333 !important;
+    border: 2px dashed #0dcaf0 !important;
+  }
+  
+  .selected-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background-color: #333;
+    color: #fff;
+    cursor: default;
+    transition: all 0.2s ease-in-out;
+    text-decoration: none;
+  }
+  
+  .selected-file:hover {
+    text-decoration: underline;
+    background-color: #444;
+  }
+  
+  .preview {
+    width: 40px;
+    height: auto;
+    margin-right: 10px;
+  }
+  
+  .remove-icon {
+    margin-left: auto;
+    color: red;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .remove-icon:hover {
+    color: darkred;
+  }
+  .file-name:hover {
+    text-decoration: underline;
+    color: #ddd;
+  }
+  
+  .drag-over {
+    background-color: #444 !important;
+  }
+  
+  ul.list-unstyled li {
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  ul.list-unstyled li:hover {
+    background-color: #3a3a3a;
+  }
+    
