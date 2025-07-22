@@ -12,6 +12,13 @@ app.use(cors());
 app.use(express.json());
 app.use('/output', express.static(path.join(__dirname, 'output')));
 
+const corsOptions = {
+  origin: '*',
+  exposedHeaders: ['Content-Disposition']
+};
+
+app.use(cors(corsOptions));
+
 // Ensure uploads/ and output/ folders exist
 ['uploads', 'output'].forEach(folder => {
   const dirPath = path.join(__dirname, folder);
@@ -41,13 +48,21 @@ app.post('/resize', upload.array('images'), async (req, res) => {
     const resizedFiles = [];
 
     for (const file of files) {
-      const outputFileName = `${Date.now()}_${file.originalname}`;
+      const originalName = path.parse(file.originalname).name;
+      const extension = path.extname(file.originalname);
+    
+      const now = new Date();
+    
+      const pad = (n) => n.toString().padStart(2, '0');
+      const formattedTimestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+    
+      const outputFileName = `${originalName}_${formattedTimestamp}${extension}`;
       const outputPath = path.join(__dirname, 'output', outputFileName);
-
+    
       await sharp(file.path)
         .resize(width, height)
         .toFile(outputPath);
-
+    
       resizedFiles.push({ path: outputPath, name: outputFileName });
     }
 
@@ -60,12 +75,14 @@ app.post('/resize', upload.array('images'), async (req, res) => {
     }    
 
     // Return a .zip for multiple files
-    const zipName = `resized_${Date.now()}.zip`;
+    const now = new Date();
+    const pad = (n) => n.toString().padStart(2, '0');
+    const formattedTimestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+    const zipName = `resized_${formattedTimestamp}.zip`;
     const zipPath = path.join(__dirname, 'output', zipName);
     const output = fs.createWriteStream(zipPath);
     const archive = archiver('zip');
-
-    // Handle archive errors
+    // // Handle archive errors
     archive.on('error', (err) => {
       throw err;
     });

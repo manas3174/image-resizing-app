@@ -162,14 +162,17 @@ export class ResizeComponent {
   
     this.resizeService.resizeImages(this.selectedImages, this.width, this.height).subscribe({
       next: (response) => {
+        console.log('Headers:', response.headers);
+        console.log('Content-Disposition:', response.headers.get('content-disposition'));
         const contentDisposition = response.headers.get('content-disposition');
-        let filename = 'resized-file';
-  
+        var filename = '';
         if (contentDisposition) {
-          const match = contentDisposition.match(/filename="?(.+?)"?$/);
-          if (match) filename = match[1];
+          const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+          if (match && match[1]) {
+            filename = match[1].replace(/['"]/g, '');
+          }
         }
-  
+
         // Save filename to show in UI
         this.uploadedFileNames = [filename];
   
