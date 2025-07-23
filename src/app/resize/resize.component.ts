@@ -1,17 +1,21 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { ResizeService } from '../services/resize.service';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 
 @Component({
   selector: 'app-resize',
   templateUrl: './resize.component.html',
-  imports: [CommonModule]
+  imports: [CommonModule, FormsModule]
 })
 export class ResizeComponent {
   selectedImages: File[] = [];
   width: number = 300;
   height: number = 300;
+  customWidth: number | null = null;
+  customHeight: number | null = null;
+  isCustom: boolean = false;
 
   uploadedFileNames: string[] = [];
 
@@ -148,10 +152,9 @@ export class ResizeComponent {
 
 
     isUploading: boolean = false;
-
  
   onSubmit(): void {
-    console.log('Submit button clicked');
+    // console.log('Submit button clicked');
   
     if (!this.selectedImages.length || !this.width || !this.height) {
       alert('Please select image(s) and provide dimensions');
@@ -195,9 +198,20 @@ export class ResizeComponent {
   
 
   onDimensionSelect(event: any) {
-    const [w, h] = event.target.value.split('x');
-    this.width = +w;
-    this.height = +h;
+    const value = event.target.value;
+  
+    if (value === 'custom') {
+      this.isCustom = true;
+      this.width = 0;
+      this.height = 0;
+    } else {
+      this.isCustom = false;
+      const [w, h] = value.split('x');
+      this.width = +w;
+      this.height = +h;
+    }
   }
+  
+  
   
 }

@@ -12,24 +12,25 @@
   >
     <div class="mb-3 text-white">
       <i class="bi bi-file-earmark" style="font-size: 2rem;"></i>
-      <p>Drag & Drop Image Files or Folders Here</p>
+      <p>Drag & Drop Files Here</p>
     </div>
 
-
+    <!--Upload Buttons-->
+    <div class="d-flex justify-content-center flex-wrap gap-3 mb-3">
       <!-- File Upload Button -->
-      <label class="btn btn-secondary mb-2 w-30 me-2">
+      <label class="btn btn-secondary mb-0">
         Upload Images
         <input
           type="file"
           (change)="onImageSelect($event)"
           multiple
-          accept="image/*"
+          accept=".jpg, .jpeg, .png, .svg, .gif, image/*"
           hidden
         />
       </label>
 
       <!-- Folder Upload Button -->
-      <label class="btn btn-secondary mb-2 w-30">
+      <label class="btn btn-secondary mb-0">
         Upload Folder
         <input
           type="file"
@@ -42,8 +43,8 @@
         />
       </label>
 
-      <div class="d-flex justify-content-center flex-column align-items-center gap-3">
-        <button class="btn btn-light" (click)="clearImages()">Clear Upload</button>
+      <!-- Clear Button -->
+      <button class="btn btn-light" (click)="clearImages()">Clear Upload</button>
     </div>
   </div>
 
@@ -62,7 +63,7 @@
       <ul class="list-unstyled">
         <li
           *ngFor="let file of selectedImages; let i = index"
-          class="d-flex align-items-center px-3 py-2"
+          class="d-flex align-items-center px-3 py-2 mb-2 rounded"
           style="background-color: #2a2a2a; color: #fff;"
         >
           <img
@@ -74,9 +75,12 @@
           />
 
           <span
-            style="flex: 1; text-align: left;"
+            style="flex: 1; text-align: left; cursor: pointer;"
             class="file-name"
             (click)="openFile(file)"
+            [ngStyle]="{ 'text-decoration': hoveredFile === file ? 'underline' : 'none' }"
+            (mouseover)="hoveredFile = file"
+            (mouseout)="hoveredFile = null"
           >
             {{ file.name }}
           </span>
@@ -101,26 +105,40 @@
     <select class="form-select w-50 mx-auto" (change)="onDimensionSelect($event)">
       <option value="">Choose...</option>
 
-      <optgroup label="16:9">
-        <option value="3840x2160">3840 x 2160</option>
-        <option value="1920x1080">1920 x 1080</option>
-        <option value="1280x720">1280 x 720</option>
+      <optgroup label="Horizontal">
+        <option value="1050x600">1050 x 600</option>
+        <option value="1051x591">1051 x 591</option>
+        <option value="1063x591">1280 x 591</option>
+        <option value="960x600">960 x 600</option>
+        <option value="1200x600">1200 x 600</option>
+
       </optgroup>
 
-      <optgroup label="4:3">
-        <option value="1600x1200">1600 x 1200</option>
-        <option value="1024x768">1024 x 768</option>
-        <option value="800x600">800 x 600</option>
-      </optgroup>
-
-      <optgroup label="1:1">
-        <option value="1080x1080">1080 x 1080</option>
-        <option value="800x800">800 x 800</option>
-        <option value="400x400">400 x 400</option>
-        <option value="200x200">200 x 200</option>
-        <option value="150x150">150 x 150</option>
+      <optgroup label="Vertical">
+        <option value="600x1050">600 x 1050</option>
+        <option value="591x1051">591 x 768</option>
+        <option value="591x1063">591 x 1063</option>
+        <option value="600x960">600 x 960</option>
+        <option value="1063x591">600 x 1200</option>
       </optgroup>
     </select>
+
+    <div *ngIf="isCustom" class="mt-3 d-flex justify-content-center gap-3">
+      <input
+        type="number"
+        [(ngModel)]="customWidth"
+        class="form-control w-25"
+        placeholder="Width"
+        min="1"
+      />
+      <input
+        type="number"
+        [(ngModel)]="customHeight"
+        class="form-control w-25"
+        placeholder="Height"
+        min="1"
+      />
+    </div>
   </div>
 
   <!-- Submit Button -->
