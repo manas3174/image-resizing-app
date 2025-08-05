@@ -16,7 +16,7 @@ export class ResizeComponent {
   customHeight: number | null = null;
   isCustom: boolean = false;
   usePercentage: boolean = false;
-  resizePercentage: number = 100;
+  resizePercentage: number | null = null;
 
   uploadedFileNames: string[] = [];
   isUploading: boolean = false;
@@ -164,7 +164,7 @@ export class ResizeComponent {
       this.selectedImages,
       this.usePercentage ? null : this.width,
       this.usePercentage ? null : this.height,
-      this.usePercentage ? this.resizePercentage : undefined
+      this.usePercentage ? this.resizePercentage ?? undefined : undefined
     ).subscribe({
       next: (response) => {
         const contentDisposition = response.headers.get('content-disposition');
@@ -189,6 +189,7 @@ export class ResizeComponent {
         link.click();
         URL.revokeObjectURL(link.href);
         this.isUploading = false;
+        
       },
       error: (err) => {
         console.error('Resize failed:', err);

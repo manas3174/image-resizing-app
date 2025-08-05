@@ -47,54 +47,6 @@
     </div>
   </div>
 
-  <div *ngIf="isUploading" class="text-center my-4">
-    <div class="spinner-border text-light" role="status">
-      <span class="visually-hidden">Uploading...</span>
-    </div>
-  </div>
-
-  <div *ngIf="selectedImages.length" class="mt-5 mb-4 d-flex justify-content-center">
-    <div class="file-list w-75">
-      <h5 class="text-light mb-3 text-center">SELECTED FILES</h5>
-
-      <ul class="list-unstyled">
-        <li
-          *ngFor="let file of selectedImages; let i = index"
-          class="d-flex align-items-center px-3 py-2 mb-2 rounded"
-          style="background-color: #2a2a2a; color: #fff;"
-        >
-          <img
-            [src]="getImagePreview(file)"
-            alt="preview"
-            width="36"
-            height="36"
-            style="object-fit: cover; border-radius: 4px; margin-right: 12px;"
-          />
-
-          <span
-            style="flex: 1; text-align: left; cursor: pointer;"
-            class="file-name"
-            (click)="openFile(file)"
-            [ngStyle]="{ 'text-decoration': hoveredFile === file ? 'underline' : 'none' }"
-            (mouseover)="hoveredFile = file"
-            (mouseout)="hoveredFile = null"
-          >
-            {{ file.name }}
-          </span>
-
-          <span
-            class="text-danger"
-            style="cursor: pointer; font-size: 1.5rem;"
-            (click)="removeFile(i)"
-            title="Remove"
-          >
-            ×
-          </span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
   <!--dropdown-->
   <div class="mb-4 mt-5">
     <h5 class="text-uppercase">Dimensions</h5>
@@ -169,4 +121,52 @@
 
   <!-- resize btn -->
   <button class="btn btn-outline-light px-4 py-2" (click)="onSubmit()">RESIZE</button>
+
+  <div *ngIf="isUploading" class="text-center my-4">
+    <div class="spinner-border text-light" role="status">
+      <span class="visually-hidden">Uploading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="selectedImages.length" class="mt-5 mb-4 d-flex justify-content-center">
+    <div class="file-list w-75">
+      <h5 class="text-light mb-3 text-center">SELECTED FILES</h5>
+
+      <ul class="list-unstyled">
+        <li
+          *ngFor="let file of selectedImages; let i = index"
+          class="d-flex align-items-center px-3 py-2 mb-2 rounded"
+          style="background-color: #2a2a2a; color: #fff;"
+        >
+          <img
+            [src]="getImagePreview(file)"
+            alt="preview"
+            width="36"
+            height="36"
+            style="object-fit: cover; border-radius: 4px; margin-right: 12px;"
+          />
+
+          <span
+            style="flex: 1; text-align: left; cursor: pointer;"
+            class="file-name"
+            (click)="openFile(file)"
+            [ngStyle]="{ 'text-decoration': hoveredFile === file ? 'underline' : 'none' }"
+            (mouseover)="hoveredFile = file"
+            (mouseout)="hoveredFile = null"
+          >
+            {{ file.name }}
+          </span>
+
+          <span
+            class="text-danger"
+            style="cursor: pointer; font-size: 1.5rem;"
+            (click)="removeFile(i)"
+            title="Remove"
+          >
+            ×
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>
