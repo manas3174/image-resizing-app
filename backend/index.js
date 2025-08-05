@@ -1,3 +1,4 @@
+// modules
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
@@ -8,6 +9,7 @@ const sharp = require('sharp');
 const archiver = require('archiver');
 require('dotenv').config();
 
+// middleware setup
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -19,17 +21,20 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// uploads and output folders
 ['uploads', 'output'].forEach(folder => {
   const dirPath = path.join(__dirname, folder);
   if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath);
 });
 
+// multer config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, 'uploads')),
   filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname),
 });
 const upload = multer({ storage });
 
+// function for resizing SVG files
 async function resizeSvg(filePath, width, height, outputPath, resizePercentage = null) {
   const svgContent = fs.readFileSync(filePath, 'utf-8');
   const parser = new xml2js.Parser();
@@ -39,6 +44,7 @@ async function resizeSvg(filePath, width, height, outputPath, resizePercentage =
   if (svgObj.svg) {
     svgObj.svg.$ = svgObj.svg.$ || {};
 
+    // calculate dimensions from percentage
     if (resizePercentage && svgObj.svg.$.width && svgObj.svg.$.height) {
       const originalWidth = parseInt(svgObj.svg.$.width);
       const originalHeight = parseInt(svgObj.svg.$.height);
@@ -50,6 +56,7 @@ async function resizeSvg(filePath, width, height, outputPath, resizePercentage =
       }
     }
 
+    // update SVG width and height
     svgObj.svg.$.width = width;
     svgObj.svg.$.height = height;
 
@@ -62,6 +69,7 @@ async function resizeSvg(filePath, width, height, outputPath, resizePercentage =
   }
 }
 
+// API endpoint for resizing engine
 app.post('/resize', upload.array('images'), async (req, res) => {
   try {
     const files = req.files;
@@ -74,6 +82,8 @@ app.post('/resize', upload.array('images'), async (req, res) => {
     }
 
     const resizedFiles = [];
+
+    // add timestamp to resized filename
     const now = new Date();
     const pad = (n) => n.toString().padStart(2, '0');
     const formattedTimestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
@@ -85,8 +95,10 @@ app.post('/resize', upload.array('images'), async (req, res) => {
       const outputPath = path.join(__dirname, 'output', outputFileName);
 
       if (extension === '.svg') {
+        // resize SVG files using XML manipulation
         await resizeSvg(file.path, width, height, outputPath, isNaN(resizePercentage) ? null : resizePercentage);
       } else {
+        // resize jpg/png images using sharp
         const image = sharp(file.path);
         const metadata = await image.metadata();
 
@@ -105,12 +117,14 @@ app.post('/resize', upload.array('images'), async (req, res) => {
       resizedFiles.push({ path: outputPath, name: outputFileName });
     }
 
+    // for single image upload
     if (resizedFiles.length === 1) {
       const file = resizedFiles[0];
       res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`);
       return res.download(file.path);
     }
 
+    // for batch image upload 
     const zipName = `resized_${formattedTimestamp}.zip`;
     const zipPath = path.join(__dirname, 'output', zipName);
     const output = fs.createWriteStream(zipPath);
@@ -132,6 +146,7 @@ app.post('/resize', upload.array('images'), async (req, res) => {
       });
     });
 
+    // finalize zip file
     await archive.finalize();
 
   } catch (err) {
@@ -140,6 +155,7 @@ app.post('/resize', upload.array('images'), async (req, res) => {
   }
 });
 
+// start the server
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Server running on port ${process.env.PORT || 3000}`);
 });
