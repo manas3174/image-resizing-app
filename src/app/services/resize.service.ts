@@ -8,11 +8,15 @@ import { Observable } from 'rxjs';
 export class ResizeService {
   constructor(private http: HttpClient) {}
 
-  resizeImages(images: File[], width: number, height: number): Observable<HttpResponse<Blob>> {
+  resizeImages(images: File[], width: number | null , height: number | null, percentage?:number): Observable<HttpResponse<Blob>> {
     const formData = new FormData();
     images.forEach(img => formData.append('images', img));
-    formData.append('width', width.toString());
-    formData.append('height', height.toString());
+    if (percentage && percentage !== 100) {
+      formData.append('resizePercentage', percentage.toString());
+    } else {
+      if (width !== null) formData.append('width', width.toString());
+      if (height !== null) formData.append('height', height.toString());
+    }
 
     return this.http.post('http://localhost:5000/resize', formData, {
       responseType: 'blob',

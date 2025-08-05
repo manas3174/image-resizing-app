@@ -1,7 +1,7 @@
 <div class="container text-center text-white py-5" style="background-color: #222; min-height: 100vh;">
   <h1 class="mb-5 display-4">Image Resizing Application</h1>
 
-  <!-- Drag and Drop -->
+  <!--drag & drop-->
   <div
     class="p-5 bg-dark rounded mb-4 border border-light text-center"
     (dragover)="onDragOver($event)"
@@ -15,9 +15,8 @@
       <p>Drag & Drop Files Here</p>
     </div>
 
-    <!--Upload Buttons-->
     <div class="d-flex justify-content-center flex-wrap gap-3 mb-3">
-      <!-- File Upload Button -->
+      <!--image upload btn-->
       <label class="btn btn-secondary mb-0">
         Upload Images
         <input
@@ -29,7 +28,7 @@
         />
       </label>
 
-      <!-- Folder Upload Button -->
+      <!--folder upload btn-->
       <label class="btn btn-secondary mb-0">
         Upload Folder
         <input
@@ -43,19 +42,17 @@
         />
       </label>
 
-      <!-- Clear Button -->
+      <!--clear btn-->
       <button class="btn btn-light" (click)="clearImages()">Clear Upload</button>
     </div>
   </div>
 
-  <!-- Loading Spinner -->
   <div *ngIf="isUploading" class="text-center my-4">
     <div class="spinner-border text-light" role="status">
       <span class="visually-hidden">Uploading...</span>
     </div>
   </div>
 
-  <!-- File List -->
   <div *ngIf="selectedImages.length" class="mt-5 mb-4 d-flex justify-content-center">
     <div class="file-list w-75">
       <h5 class="text-light mb-3 text-center">SELECTED FILES</h5>
@@ -98,17 +95,17 @@
     </div>
   </div>
 
-  <!-- Dimensions Dropdown -->
+  <!--dropdown-->
   <div class="mb-4 mt-5">
     <h5 class="text-uppercase">Dimensions</h5>
     <p>Choose the dimension into which you want to resize your image(s)</p>
-    <select class="form-select w-50 mx-auto" (change)="onDimensionSelect($event)">
+    <select class="form-select w-50 mx-auto mb-3" (change)="onDimensionSelect($event)">
       <option value="">Choose...</option>
 
       <optgroup label="Horizontal">
         <option value="1050x600">1050 x 600</option>
         <option value="1051x591">1051 x 591</option>
-        <option value="1063x591">1280 x 591</option>
+        <option value="1280x591">1280 x 591</option>
         <option value="960x600">960 x 600</option>
         <option value="1200x600">1200 x 600</option>
 
@@ -139,8 +136,37 @@
         min="1"
       />
     </div>
+
+    <div class="percentage-resize">
+      <h5 class="text-uppercase">OR</h5>
+
+      <input
+        type="number"
+        id="resizePercentage"
+        class="form-control mb-2 w-50 mx-auto"
+        [(ngModel)]="resizePercentage"
+        (change)="usePercentage = true"
+        min="1"
+        max="500"
+        placeholder="Enter Percentage (e.g. 100% for original size)"
+      />
+      <br>
+      <!-- slider -->
+      <input
+        type="range"
+        min="1"
+        max="500"
+        step="1"
+        [(ngModel)]="resizePercentage"
+        (input)="usePercentage = true"
+        class="me-3"
+      />
+      
+      <span>{{ resizePercentage }}%</span>
+    </div>
+    
   </div>
 
-  <!-- Submit Button -->
+  <!-- resize btn -->
   <button class="btn btn-outline-light px-4 py-2" (click)="onSubmit()">RESIZE</button>
 </div>

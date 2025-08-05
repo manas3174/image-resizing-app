@@ -17,19 +17,39 @@ const corsOptions = {
   origin: '*',
   exposedHeaders: ['Content-Disposition']
 };
-
 app.use(cors(corsOptions));
 
-async function resizeSvg(filePath, width, height, outputPath) {
-  const svgContent = fs.readFileSync(filePath, 'utf-8');
+['uploads', 'output'].forEach(folder => {
+  const dirPath = path.join(__dirname, folder);
+  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath);
+});
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, 'uploads')),
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname),
+});
+const upload = multer({ storage });
+
+async function resizeSvg(filePath, width, height, outputPath, resizePercentage = null) {
+  const svgContent = fs.readFileSync(filePath, 'utf-8');
   const parser = new xml2js.Parser();
   const builder = new xml2js.Builder();
 
   const svgObj = await parser.parseStringPromise(svgContent);
-
   if (svgObj.svg) {
     svgObj.svg.$ = svgObj.svg.$ || {};
+
+    if (resizePercentage && svgObj.svg.$.width && svgObj.svg.$.height) {
+      const originalWidth = parseInt(svgObj.svg.$.width);
+      const originalHeight = parseInt(svgObj.svg.$.height);
+
+      if (!isNaN(originalWidth) && !isNaN(originalHeight)) {
+        const scale = resizePercentage / 100;
+        width = Math.round(originalWidth * scale);
+        height = Math.round(originalHeight * scale);
+      }
+    }
+
     svgObj.svg.$.width = width;
     svgObj.svg.$.height = height;
 
@@ -42,31 +62,15 @@ async function resizeSvg(filePath, width, height, outputPath) {
   }
 }
 
-
-// Ensure uploads/ and output/ folders exist
-['uploads', 'output'].forEach(folder => {
-  const dirPath = path.join(__dirname, folder);
-  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath);
-});
-
-// Multer storage config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, 'uploads')),
-  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname),
-});
-const upload = multer({ storage });
-
 app.post('/resize', upload.array('images'), async (req, res) => {
   try {
     const files = req.files;
-    const width = parseInt(req.body.width);
-    const height = parseInt(req.body.height);
+    let width = parseInt(req.body.width);
+    let height = parseInt(req.body.height);
+    const resizePercentage = parseFloat(req.body.resizePercentage);
 
     if (!files?.length) {
       return res.status(400).json({ message: 'No files uploaded' });
-    }
-    if (isNaN(width) || isNaN(height)) {
-      return res.status(400).json({ message: 'Invalid width or height' });
     }
 
     const resizedFiles = [];
@@ -81,28 +85,32 @@ app.post('/resize', upload.array('images'), async (req, res) => {
       const outputPath = path.join(__dirname, 'output', outputFileName);
 
       if (extension === '.svg') {
-        // outputFileName = `${originalName}_${formattedTimestamp}.svg`;
-        // outputPath = path.join(__dirname, 'output', outputFileName);
-      
-        await resizeSvg(file.path, width, height, outputPath);
-      }
-      else {
-        await sharp(file.path)
-          .resize(width, height)
-          .toFile(outputPath);
+        await resizeSvg(file.path, width, height, outputPath, isNaN(resizePercentage) ? null : resizePercentage);
+      } else {
+        const image = sharp(file.path);
+        const metadata = await image.metadata();
+
+        let targetWidth = width;
+        let targetHeight = height;
+
+        if (!isNaN(resizePercentage) && resizePercentage !== 100) {
+          const scale = resizePercentage / 100;
+          targetWidth = Math.round(metadata.width * scale);
+          targetHeight = Math.round(metadata.height * scale);
+        }
+
+        await image.resize(targetWidth, targetHeight).toFile(outputPath);
       }
 
       resizedFiles.push({ path: outputPath, name: outputFileName });
     }
 
-    // If single file, return directly
     if (resizedFiles.length === 1) {
       const file = resizedFiles[0];
       res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`);
       return res.download(file.path);
     }
 
-    // If multiple, zip the files
     const zipName = `resized_${formattedTimestamp}.zip`;
     const zipPath = path.join(__dirname, 'output', zipName);
     const output = fs.createWriteStream(zipPath);
@@ -132,6 +140,6 @@ app.post('/resize', upload.array('images'), async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`Server running on port ${process.env.PORT || 3000}`);
 });
